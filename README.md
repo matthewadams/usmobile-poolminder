@@ -35,3 +35,12 @@ Sample customized usage:
 > NOTE: In the above example, if your current data remaining in the pool plus the topup meets or exceeds the threshold,
 > then the number of gigabytes purchased will be the given value. However, if the the data remaining the pool does not
 > meet the threshold, then enough whole gigabytes are added to meet or just exceed the threshold.
+
+## Docker
+You can build your own Docker image with this repo's `Dockerfile`, until such time as I get images publishing automatically
+to https://hub.docker.com.  Usage is the same as the raw script usage.  For example:
+
+```shell
+docker build -t poolminder:latest .
+docker run --rm -it poolminder:latest --token "$POOLMINDER_TOKEN" --pool-id "$POOLMINDER_TOKEN" --no-dry-run
+```
