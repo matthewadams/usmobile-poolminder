@@ -40,7 +40,7 @@ fi
 
 "$THIS_ABSPATH/release.sh" \
   --dev-qa \
-  --tech version \
+  --tech version,docker \
   --git-commit-opts '--no-verify' \
   --git-push-opts '--no-verify' \
   $@
