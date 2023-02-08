@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -e
+
+# This is a convenient script to retrieve & invoke the Northscaler release script with settings that are appropriate
+# for your repo.  You should copy & edit it as you see fit for your repo, then put it under that repo's source control.
+
+# You should gitignore the files you download using this script, otherwise it'll mess with your git status when releasing.
+
+# Update this value to have this repo use a different version of the release.sh script to release itself
+RM_USE_VERSION=2.1.0
+# Override the version in use if you want to by setting RM_VERSION before invoking this script
+RM_VERSION=${RM_VERSION:-$RM_USE_VERSION} # the git ref of the version of the release-management file you want to get
+
+THIS_ABSPATH="$(
+  cd "$(dirname "$0")"
+  pwd
+)"
+
+# try with curl or wget, else fallback to docker
+if which -s curl; then
+  fetch='curl -s '
+elif which -s wget; then
+  fetch='wget -qO - '
+elif which -s docker; then
+  fetch='docker run --rm -i rancher/curl -s '
+else
+  echo "can't determine how to fetch remote files on this system"
+  exit 1
+fi
+
+get() {
+  $fetch https://gitlab.com/northscaler-public/release-management/-/raw/$RM_VERSION/$1 >"$THIS_ABSPATH/$1"
+}
+
+# get any required files from Northscaler's release-management repo
+if [ ! -f release.sh ] || [ -n "$RM_GET_RELEASE_SH" ]; then
+  get release.sh
+  chmod +x release.sh
+fi
+
+"$THIS_ABSPATH/release.sh" \
+  --dev-qa \
+  --tech version \
+  --git-commit-opts '--no-verify' \
+  --git-push-opts '--no-verify' \
+  $@
