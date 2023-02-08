@@ -1,6 +1,6 @@
 # US Mobile Data Pool Minder
 
-Tops up a US Mobile if it falls below a given threshold.
+Tops up a US Mobile if it is below a given threshold.
 
 Inspired by https://github.com/dbrand666/usmobile-lifeguard
 
