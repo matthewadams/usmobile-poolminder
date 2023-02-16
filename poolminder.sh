@@ -16,6 +16,7 @@ THRESHOLD_GB=${POOLMINDER_THRESHOLD_GB:-1}
 TOPUP_GB=${POOLMINDER_TOPUP_GB:-1}
 AUTH_HEADER=${POOLMINDER_AUTH_HEADER:-USMAuthorization}
 TOPUP_SHORTFALL_STRATEGY=${POOLMINDER_TOPUP_SHORTFALL_STRATEGY:-fail}
+VERBOSE="$POOLMINDER_VERBOSE"
 
 DRY_RUN=1
 # Because a blank DRY_RUN means to **not** do a dry run,
@@ -24,6 +25,7 @@ DRY_RUN=1
 if env | grep -Eq '^POOLMINDER_DRY_RUN='; then
   DRY_RUN="$POOLMINDER_DRY_RUN"
 fi
+
 # end defaults
 
 function usage() {
@@ -55,8 +57,9 @@ function usage() {
   \n\
   Any unrecognized option will cause this script to exit with a nonzero status.\n\
   \n\
-  Also, any option except verbose & help can be set via environment variable.  Prefix is POOLMINDER_, then append option \n\
-  converted to UPPER_SNAKE_CASE.  For example, POOLMINDER_THRESHOLD_GB=2 or, to really do it, POOLMINDER_DRY_RUN=''. \n\
+  Also, any option except help & no-dry-run can be set via environment variable.  Prefix is POOLMINDER_, then append \n\
+  the option name converted to UPPER_SNAKE_CASE.  For example, POOLMINDER_THRESHOLD_GB=2 or, to really top up the pool,\n\
+  POOLMINDER_DRY_RUN=''. \n\
   \n\
   Command-line arguments win if both environment variables and command-line arguments are given.\n\
   " \
@@ -140,7 +143,7 @@ if [ "$(echo "$THRESHOLD_GB <= 0" | bc --mathlib)" == 1 ]; then
   echo "threshold-gb must be >= 0" >&2
   exit 3
 fi
-if [ "$(echo "$TOPUP_GB <= 0" | bc)" == 1 ]; then
+if [ "$(echo "$TOPUP_GB <= 0" | bc --mathlib)" == 1 ]; then
   echo "topup-gb must be >= 0" >&2
   exit 3
 fi
@@ -167,7 +170,7 @@ json="$(http $POOL_DATA_URL "$AUTH")"
 REMAINING_MB="$(echo "$json" | jq .balanceInMB)"
 if [ "$REMAINING_MB" == 'null' ]; then
   set -e
-  echo "failed to get pool data; response: $(echo "$json" | jq)"
+  echo "failed to get pool data; response: $(echo "$json")"
   exit 4
 fi
 
@@ -177,7 +180,7 @@ if [ -n "$VERBOSE" ]; then
   echo "REMAINING_GB=$REMAINING_GB"
 fi
 if [ "$(echo "$REMAINING_GB > $THRESHOLD_GB" | bc --mathlib)" == 1 ]; then
-  echo "remaining gb of $REMAINING_GB Gb > $THRESHOLD_GB Gb; not topping up"
+  echo "remaining Gb of $REMAINING_GB Gb > $THRESHOLD_GB Gb; not topping up"
   exit 0
 fi
 
@@ -235,4 +238,4 @@ json="$(http "$TOPUP_URL" "$AUTH" creditCardToken="$CREDIT_CARD_TOKEN" topUpSize
 REMAINING_MB="$(echo "$json" | jq .balanceInMB)"
 REMAINING_GB="$(echo "$REMAINING_MB / 1024" | bc --mathlib)"
 
-echo "data now remaining: $REMAINING_GB Gb"
+echo "topped up $TOPUP_GB Gb; data now remaining: $REMAINING_GB Gb"
