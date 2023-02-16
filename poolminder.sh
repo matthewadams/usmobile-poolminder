@@ -122,7 +122,7 @@ TOPUP_SHORTFALL_STRATEGY="$(echo "$TOPUP_SHORTFALL_STRATEGY" | tr '[:upper:]' '[
 
 if [ -n "$VERBOSE" ]; then
   echo "TOKEN=<masked>"
-  for it in POOL_ID DRY_RUN THRESHOLD_GB TOPUP_GB ALLOW_TOPUP_INCREASE; do
+  for it in POOL_ID DRY_RUN THRESHOLD_GB TOPUP_GB TOPUP_SHORTFALL_STRATEGY; do
     echo "$it=${!it}"
   done
 fi
