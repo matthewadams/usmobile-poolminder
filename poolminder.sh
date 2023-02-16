@@ -8,17 +8,26 @@ for it in bc http jq; do
   fi
 done
 
-# defaults
-DRY_RUN=1
-THRESHOLD_GB=1
-TOPUP_GB=1
+# begin defaults
 TOKEN="$POOLMINDER_TOKEN"
 POOL_ID="$POOLMINDER_POOL_ID"
-AUTH_HEADER="USMAuthorization"
-TOPUP_SHORTFALL_STRATEGY=fail
+
+THRESHOLD_GB=${POOLMINDER_THRESHOLD_GB:-1}
+TOPUP_GB=${POOLMINDER_TOPUP_GB:-1}
+AUTH_HEADER=${POOLMINDER_AUTH_HEADER:-USMAuthorization}
+TOPUP_SHORTFALL_STRATEGY=${POOLMINDER_TOPUP_SHORTFALL_STRATEGY:-fail}
+
+DRY_RUN=1
+# Because a blank DRY_RUN means to **not** do a dry run,
+# we need to see if the variable is present in the env,
+# then take its value if it is.
+if env | grep -Eq '^POOLMINDER_DRY_RUN='; then
+  DRY_RUN="$POOLMINDER_DRY_RUN"
+fi
+# end defaults
 
 function usage() {
-  printf "Usage: $0\n
+  printf "Usage: %s\n
   --token <token> REQUIRED: Your usmobile.com API token.\n\
     It's the JWT returned by (POST /web-gateway/api/v1/auth).\n\
     Use your browser's dev tools to get it.\n\
@@ -44,7 +53,14 @@ function usage() {
   --verbose OPTIONAL: be verbose.\n\
   --help,-h OPTIONAL: produces this message.\n\
   \n\
-  Any unrecognized option will cause this script to exit with a nonzero status.\n"
+  Any unrecognized option will cause this script to exit with a nonzero status.\n\
+  \n\
+  Also, any option except verbose & help can be set via environment variable.  Prefix is POOLMINDER_, then append option \n\
+  converted to UPPER_SNAKE_CASE.  For example, POOLMINDER_THRESHOLD_GB=2 or, to really do it, POOLMINDER_DRY_RUN=''. \n\
+  \n\
+  Command-line arguments win if both environment variables and command-line arguments are given.\n\
+  " \
+  "$0"
 }
 
 while [ -n "$1" ]; do
