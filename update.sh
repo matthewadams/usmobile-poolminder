@@ -41,12 +41,14 @@ fi
 
 IMAGE=registry.fly.io/$APP:$TAG
 echo "Running $IMAGE on a new machine $SCHEDULE." >&2
+set -x
 fly machine run \
   $IMAGE \
-  $APP_ARG \
-  --schedule $SCHEDULE \
-  -e POOLMINDER_VERBOSE=1 \
-  -e POOLMINDER_NO_DRY_RUN=1 \
-  -e POOLMINDER_TOPUP_SHORTFALL_STRATEGY=increase \
   --detach \
-  --verbose
+  --verbose \
+  --schedule $SCHEDULE \
+  $APP_ARG \
+  -- \
+  --verbose \
+  --no-dry-run \
+  --topup-shortfall-strategy increase
