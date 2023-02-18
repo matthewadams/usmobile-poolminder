@@ -47,5 +47,6 @@ fly machine run \
   --schedule $SCHEDULE \
   -e POOLMINDER_VERBOSE=1 \
   -e POOLMINDER_NO_DRY_RUN=1 \
+  -e POOLMINDER_TOPUP_SHORTFALL_STRATEGY=increase \
   --detach \
   --verbose
