@@ -10,4 +10,5 @@ COPY ./VERSION /
 COPY ./LICENSE /
 COPY ./README.md /
 
+CMD ["--help"]
 ENTRYPOINT ["./poolminder.sh"]
