@@ -19,13 +19,18 @@ TOPUP_SHORTFALL_STRATEGY=${POOLMINDER_TOPUP_SHORTFALL_STRATEGY:-fail}
 VERBOSE="$POOLMINDER_VERBOSE"
 
 DRY_RUN=1
-# Because a blank DRY_RUN means to **not** do a dry run,
-# we need to see if the variable is present in the env,
-# then take its value if it is.
 if env | grep -Eq '^POOLMINDER_DRY_RUN='; then
-  DRY_RUN="$POOLMINDER_DRY_RUN"
+  DRY_RUN_GIVEN=1
+  DRY_RUN="$(echo "$POOLMINDER_DRY_RUN" | xargs)" # trim whitespace
 fi
-
+if [ -n "$NO_DRY_RUN" ]; then
+  DRY_RUN=1
+fi
+NO_DRY_RUN="$(echo "$POOLMINDER_NO_DRY_RUN" | xargs)" # trim whitespace
+# only honor NO_DRY_RUN if DRY_RUN was not given; DRY_RUN trumps
+if [ -n "$NO_DRY_RUN" ] && [ -z "$DRY_RUN_GIVEN" ]; then
+  DRY_RUN=
+fi
 # end defaults
 
 function usage() {
@@ -33,11 +38,11 @@ function usage() {
   --token <token> REQUIRED: Your usmobile.com API token.\n\
     It's the JWT returned by (POST /web-gateway/api/v1/auth).\n\
     Use your browser's dev tools to get it.\n\
-    It can also be specified via environment variable POOLMINDER_TOKEN.\n\
+    It is expected to be specified via environment variable POOLMINDER_TOKEN.\n\
   --pool-id <pool-id> REQUIRED: The id of the data pool you want to possibly top up.\n\
     Go to https://app.usmobile.com/dashboard/app/pools,\n\
     click on the pool you want, then get the id from the last token in the address bar.\n\
-    It can also be specified via environment variable POOLMINDER_POOL_ID.\n\
+    It is expected to be specified via environment variable POOLMINDER_POOL_ID.\n\
   --dry-run OPTIONAL, default is as though this flag were present.\n\
   --no-dry-run OPTIONAL: specify this flag if you want to actually have the script top up the data pool, spending your money.\n\
   --threshold-gb <threshold> OPTIONAL, default 1: the minimum number of gigabytes remaining before a topup is performed.\n\
@@ -57,11 +62,14 @@ function usage() {
   \n\
   Any unrecognized option will cause this script to exit with a nonzero status.\n\
   \n\
-  Also, any option except help & no-dry-run can be set via environment variable.  Prefix is POOLMINDER_, then append \n\
+  Also, any option except help can be set via environment variable.  Prefix is POOLMINDER_, then append \n\
   the option name converted to UPPER_SNAKE_CASE.  For example, POOLMINDER_THRESHOLD_GB=2 or, to really top up the pool,\n\
-  POOLMINDER_DRY_RUN=''. \n\
+  POOLMINDER_NO_DRY_RUN=1. \n\
+  \n\
+  If both POOLMINDER_DRY_RUN and POOLMINDER_NO_DRY_RUN are present in the environment, POOLMINDER_NO_DRY_RUN is ignored.\n\
   \n\
   Command-line arguments win if both environment variables and command-line arguments are given.\n\
+  If a command-line argument is present more than once or conflicting ones are given, the last one wins.\n\
   " \
   "$0"
 }
