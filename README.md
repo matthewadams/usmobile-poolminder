@@ -19,7 +19,7 @@ See `./poolminder.sh --help` for usage.
 Common usage:
 
 ```shell
-./poolminder.sh --token "$POOLMINDER_TOKEN" --pool-id "$POOLMINDER_TOKEN" --no-dry-run
+./poolminder.sh --token "$POOLMINDER_TOKEN" --pool-id "$POOLMINDER_POOL_ID" --no-dry-run
 ```
 
 Sample customized usage:
