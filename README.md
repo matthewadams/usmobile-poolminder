@@ -1,4 +1,5 @@
 # US Mobile Data Pool Minder
+[![Docker Repository on Quay](https://quay.io/repository/matthewadams12/usmobile-poolminder/status "Docker Repository on Quay")](https://quay.io/repository/matthewadams12/usmobile-poolminder)
 
 Tops up a US Mobile if it is below a given threshold.
 
@@ -18,7 +19,7 @@ See `./poolminder.sh --help` for usage.
 Common usage:
 
 ```shell
-./poolminder.sh --token "$POOLMINDER_TOKEN" --pool-id "$POOLMINDER_TOKEN" --no-dry-run
+./poolminder.sh --token "$POOLMINDER_TOKEN" --pool-id "$POOLMINDER_POOL_ID" --no-dry-run
 ```
 
 Sample customized usage:
@@ -48,11 +49,18 @@ the `--topup-shortfall-strategy`. Allowed values are:
 
 ## Docker
 
-You can build your own Docker image with this repo's `Dockerfile`, until such time as I get images publishing
-automatically
-to https://hub.docker.com. Usage is the same as the raw script usage. For example:
+You can build your own Docker image with this repo's `Dockerfile`.  GA releases are also published at quay.io:
+```shell
+docker pull quay.io/matthewadams12/usmobile-poolminder # or use podman
+```
+
+Usage is the same as the raw script usage. For example:
 
 ```shell
-docker build -t poolminder:latest .
-docker run --rm -it poolminder:latest --token "$POOLMINDER_TOKEN" --pool-id "$POOLMINDER_TOKEN" --no-dry-run
+docker run \
+  --rm \
+  -it \
+  quay.io/matthewadams12/usmobile-poolminder \
+  --token "$POOLMINDER_TOKEN" \
+  --pool-id "$POOLMINDER_TOKEN"
 ```

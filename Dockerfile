@@ -1,6 +1,6 @@
 FROM bash:alpine3.16
 
-LABEL version=0.1.0-dev.5
+LABEL version=0.2.0-dev.0
 
 RUN apk update
 RUN apk add httpie jq
