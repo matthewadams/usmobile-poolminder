@@ -174,7 +174,7 @@ if [ -n "$VERBOSE" ]; then
   echo "POOL_DATA_URL=$POOL_DATA_URL"
 fi
 
-json="$(http $POOL_DATA_URL "$AUTH")"
+json="$(http GET $POOL_DATA_URL "$AUTH")"
 REMAINING_MB="$(echo "$json" | jq .balanceInMB)"
 if [ "$REMAINING_MB" == 'null' ]; then
   set -e
@@ -241,7 +241,7 @@ if [ -n "$DRY_RUN" ]; then
   exit 0
 fi
 
-json="$(http "$TOPUP_URL" "$AUTH" creditCardToken="$CREDIT_CARD_TOKEN" topUpSizeInGB="$TOPUP_GB")"
+json="$(http POST "$TOPUP_URL" "$AUTH" creditCardToken="$CREDIT_CARD_TOKEN" topUpSizeInGB="$TOPUP_GB")"
 
 REMAINING_MB="$(echo "$json" | jq .balanceInMB)"
 REMAINING_GB="$(echo "$REMAINING_MB / 1024" | bc --mathlib)"
