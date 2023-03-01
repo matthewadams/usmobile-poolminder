@@ -17,6 +17,7 @@ TOPUP_GB=${POOLMINDER_TOPUP_GB:-1}
 AUTH_HEADER=${POOLMINDER_AUTH_HEADER:-USMAuthorization}
 TOPUP_SHORTFALL_STRATEGY=${POOLMINDER_TOPUP_SHORTFALL_STRATEGY:-fail}
 VERBOSE="$POOLMINDER_VERBOSE"
+SLEEP_BEFORE_EXIT="$POOLMINDER_SLEEP_BEFORE_EXIT"
 
 DRY_RUN=1
 if env | grep -Eq '^POOLMINDER_DRY_RUN='; then
@@ -57,6 +58,7 @@ function usage() {
       'exit': the script terminates immediately with a exit code of 0\n\
       'retain': the current topup-gb value is retained and applied\n\
       'increase': the current topup-gb value is increased to the next whole gb that meets or exceeds the threshold-gb value\n\
+  --sleep-before-exit <value> OPTIONAL, default 0: how long the script should sleep before exiting\n\
   --verbose OPTIONAL: be verbose.\n\
   --help,-h OPTIONAL: produces this message.\n\
   \n\
@@ -70,6 +72,9 @@ function usage() {
   \n\
   Command-line arguments win if both environment variables and command-line arguments are given.\n\
   If a command-line argument is present more than once or conflicting ones are given, the last one wins.\n\
+  \n\
+  The option to sleep before exiting was added in order to let logging infrastructures not clip log output before\n\
+  shutting down (looking at you, https://fly.io scheduled machines).\n\
   " \
   "$0"
 }
@@ -107,6 +112,10 @@ while [ -n "$1" ]; do
   --topup-gb)
     shift
     TOPUP_GB="$1"
+    ;;
+  --sleep-before-exit)
+    shift
+    SLEEP_BEFORE_EXIT="$1"
     ;;
   -h | --help)
     usage
@@ -163,6 +172,12 @@ fail | exit | retain | increase) ;;
   ;;
 esac
 
+sleepBeforeExit() {
+  if [ -n "$SLEEP_BEFORE_EXIT" ]; then
+    sleep "$SLEEP_BEFORE_EXIT"
+  fi
+}
+
 if [ -n "$VERBOSE" ]; then
   echo "TOPUP_GB after truncation=$TOPUP_GB"
 fi
@@ -179,6 +194,7 @@ REMAINING_MB="$(echo "$json" | jq .balanceInMB)"
 if [ "$REMAINING_MB" == 'null' ]; then
   set -e
   echo "failed to get pool data; response: $(echo "$json")"
+  sleepBeforeExit
   exit 4
 fi
 
@@ -189,6 +205,7 @@ if [ -n "$VERBOSE" ]; then
 fi
 if [ "$(echo "$REMAINING_GB > $THRESHOLD_GB" | bc --mathlib)" == 1 ]; then
   echo "remaining Gb of $REMAINING_GB Gb > $THRESHOLD_GB Gb; not topping up"
+  sleepBeforeExit
   exit 0
 fi
 
@@ -201,10 +218,12 @@ if [ "$(echo "$REMAINING_GB + $TOPUP_GB < $THRESHOLD_GB" | bc --mathlib)" == 1 ]
   case "$TOPUP_SHORTFALL_STRATEGY" in
   fail)
     echo "topup shortfall of $TOPUP_SHORTFALL_GB; failing based on strategy $TOPUP_SHORTFALL_STRATEGY" >&2
+    sleepBeforeExit
     exit 4
     ;;
   exit)
     echo "topup shortfall of $TOPUP_SHORTFALL_GB; exiting based on strategy $TOPUP_SHORTFALL_STRATEGY"
+    sleepBeforeExit
     exit 0
     ;;
   retain)
@@ -218,6 +237,7 @@ if [ "$(echo "$REMAINING_GB + $TOPUP_GB < $THRESHOLD_GB" | bc --mathlib)" == 1 ]
     ;;
   *)
     echo "unsupported topup strategy $TOPUP_SHORTFALL_STRATEGY" >&2
+    sleepBeforeExit
     exit 4
     ;;
   esac
@@ -238,6 +258,7 @@ fi
 if [ -n "$DRY_RUN" ]; then
   echo "dry run -- would issue request:"
   echo "http $TOPUP_URL '$AUTH_HEADER:<masked>' creditCardToken='$CREDIT_CARD_TOKEN' topUpSizeInGB='$TOPUP_GB'"
+  sleepBeforeExit
   exit 0
 fi
 
@@ -247,3 +268,5 @@ REMAINING_MB="$(echo "$json" | jq .balanceInMB)"
 REMAINING_GB="$(echo "$REMAINING_MB / 1024" | bc --mathlib)"
 
 echo "topped up $TOPUP_GB Gb; data now remaining: $REMAINING_GB Gb"
+
+sleepBeforeExit
