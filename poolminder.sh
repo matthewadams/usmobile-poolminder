@@ -211,7 +211,7 @@ fi
 
 # double check TOPUP_GB
 if [ "$(echo "$REMAINING_GB + $TOPUP_GB < $THRESHOLD_GB" | bc --mathlib)" == 1 ]; then
-  TOPUP_SHORTFALL_GB="$(echo "$THRESHOLD_GB - ($REMAINING_GB + $TOPUP_GB)" | bc --mathlib)"
+  TOPUP_SHORTFALL_GB="0$(echo "$THRESHOLD_GB - ($REMAINING_GB + $TOPUP_GB)" | bc --mathlib)" # need leading zero for when shortfall < 1
   if [ -n "$VERBOSE" ]; then
     echo "TOPUP_GB short of threshold by $TOPUP_SHORTFALL_GB"
   fi
