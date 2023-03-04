@@ -1,9 +1,9 @@
-FROM bash:alpine3.16
+FROM ubuntu
 
 LABEL version=0.3.0-dev.0
 
-RUN apk update
-RUN apk add httpie jq
+RUN apt update
+RUN apt install -y httpie jq
 
 COPY ./poolminder.sh /
 COPY ./VERSION /
