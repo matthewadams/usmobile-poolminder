@@ -3,7 +3,7 @@ FROM ubuntu
 LABEL version=0.2.3-qa.0
 
 RUN apt update
-RUN apt install -y httpie jq
+RUN apt install -y httpie jq bc
 
 COPY ./poolminder.sh /
 COPY ./VERSION /
