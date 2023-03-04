@@ -1,6 +1,6 @@
 FROM ubuntu
 
-LABEL version=0.2.2-qa.0
+LABEL version=0.2.2
 
 RUN apt update
 RUN apt install -y httpie jq
