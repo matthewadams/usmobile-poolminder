@@ -5,7 +5,7 @@ APP=poolminder
 APP_ARG="-a $APP"
 APP_REGEX="^$APP"
 TAG="$(cat VERSION)"
-SCHEDULE=${1:-hourly}
+SCHEDULE=daily
 LOCATION=local
 if [ -z "$(which docker)" ]; then
   LOCATION=remote
