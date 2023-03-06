@@ -230,8 +230,9 @@ if [ "$(echo "$REMAINING_GB + $TOPUP_GB < $THRESHOLD_GB" | bc --mathlib)" == 1 ]
     echo "topup shortfall of $TOPUP_SHORTFALL_GB; topping up by only $TOPUP_GB based on strategy $TOPUP_SHORTFALL_STRATEGY"
     ;;
   increase)
-    # round up to the next whole gb
-    TOPUP_GB="${TOPUP_SHORTFALL_GB%%.*}"              # floor
+    # round up to the next whole gb that gets amount above threshold
+    TOPUP_GB="$(echo "$TOPUP_GB + $TOPUP_SHORTFALL_GB" | bc --mathlib)"
+    TOPUP_GB="${TOPUP_GB%%.*}"                        # floor
     TOPUP_GB="$(echo "$TOPUP_GB + 1" | bc --mathlib)" # +1
     echo "topup shortfall of $TOPUP_SHORTFALL_GB; increasing topup to $TOPUP_GB based on strategy $TOPUP_SHORTFALL_STRATEGY"
     ;;
