@@ -250,20 +250,22 @@ fi
 
 TOPUP_URL="$POOL_DATA_URL/topUpAndBasePlan"
 CREDIT_CARD_TOKEN="$(echo "$json" | jq -r .creditCardToken)"
+cmd="http POST '$TOPUP_URL' '$AUTH' 'creditCardToken=$CREDIT_CARD_TOKEN' 'topUpSizeInGB=$TOPUP_GB'"
 
 if [ -n "$VERBOSE" ]; then
   echo "TOPUP_URL=$TOPUP_URL"
   echo "CREDIT_CARD_TOKEN=$CREDIT_CARD_TOKEN"
+  echo "CMD=$cmd"
 fi
 
+
 if [ -n "$DRY_RUN" ]; then
-  echo "dry run -- would issue request:"
-  echo "http $TOPUP_URL '$AUTH_HEADER:<masked>' creditCardToken='$CREDIT_CARD_TOKEN' topUpSizeInGB='$TOPUP_GB'"
+  echo "dry run; exiting"
   sleepBeforeExit
   exit 0
 fi
 
-json="$(http POST "$TOPUP_URL" "$AUTH" creditCardToken="$CREDIT_CARD_TOKEN" topUpSizeInGB="$TOPUP_GB")"
+json="$(eval $cmd)"
 
 REMAINING_MB="$(echo "$json" | jq .balanceInMB)"
 REMAINING_GB="$(echo "$REMAINING_MB / 1024" | bc --mathlib)"
