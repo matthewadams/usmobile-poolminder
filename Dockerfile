@@ -1,6 +1,6 @@
 FROM ubuntu
 
-LABEL version=0.2.5
+LABEL version=0.2.6
 
 RUN apt update
 RUN apt install -y httpie jq bc
