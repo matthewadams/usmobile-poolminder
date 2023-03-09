@@ -250,7 +250,7 @@ fi
 
 TOPUP_URL="$POOL_DATA_URL/topUpAndBasePlan"
 CREDIT_CARD_TOKEN="$(echo "$json" | jq -r .creditCardToken)"
-cmd="http POST '$TOPUP_URL' '$AUTH' 'creditCardToken=$CREDIT_CARD_TOKEN' 'topUpSizeInGB=$TOPUP_GB'"
+cmd="http --ignore-stdin POST '$TOPUP_URL' '$AUTH' 'creditCardToken=$CREDIT_CARD_TOKEN' 'topUpSizeInGB=$TOPUP_GB'"
 
 if [ -n "$VERBOSE" ]; then
   echo "TOPUP_URL=$TOPUP_URL"
