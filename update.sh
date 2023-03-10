@@ -6,7 +6,7 @@ APP_ARG="-a $APP"
 APP_REGEX="^$APP"
 TAG="$(cat VERSION)"
 SCHEDULE=daily
-LOCATION=local
+LOCATION=remote
 if [ -z "$(which docker)" ]; then
   LOCATION=remote
 fi
